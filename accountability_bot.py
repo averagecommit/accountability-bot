@@ -401,7 +401,7 @@ def main():
                         random_checkin,
                         delay,
                         data={'user_id': user_id}
-
+                    )
     
     # Reset daily usage counters
     reset_daily_usage()
