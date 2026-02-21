@@ -116,7 +116,7 @@ def get_gemini_response(user_id: str, message: str) -> str:
     try:
         # Create model with system instruction
         model = genai.GenerativeModel(
-            'gemini-1.5-flash',
+            'gemini-2.5-flash-lite',
             system_instruction=SYSTEM_PROMPT + tasks_context
         )
         
