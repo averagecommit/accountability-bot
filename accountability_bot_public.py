@@ -14,7 +14,7 @@ load_dotenv()
 # Configuration
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-DAILY_MESSAGE_LIMIT = int(os.getenv('DAILY_MESSAGE_LIMIT', '30'))  # Messages per user per day
+DAILY_MESSAGE_LIMIT = int(os.getenv('DAILY_MESSAGE_LIMIT', '60'))  # Messages per user per day
 
 # Initialize Gemini
 genai.configure(api_key=GEMINI_API_KEY)
@@ -392,7 +392,7 @@ def main():
     
     # Start the bot
     print("Bot is starting...")
-    print(f"💚 Using Google Gemini (FREE)")
+    #print(f"💚 Using Google Gemini (FREE)")
     print(f"📊 Daily limit per user: {DAILY_MESSAGE_LIMIT} messages")
     application.run_polling()
 
