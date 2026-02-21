@@ -7,6 +7,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import google.generativeai as genai
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables
 load_dotenv()
@@ -316,26 +317,38 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response)
 
 
-def schedule_random_checkins(context: ContextTypes.DEFAULT_TYPE, user_id: str):
-    """Schedule random check-ins throughout the day"""
-    # Schedule 2-4 random check-ins for the day
-    num_checkins = random.randint(2, 4)
-    
-    # Generate random times between now and end of day
+def schedule_random_checkins(context, user_id: str):
     now = datetime.now()
-    end_of_day = now.replace(hour=20, minute=0, second=0)
-    
-    for _ in range(num_checkins):
-        time_diff = (end_of_day - now).total_seconds()
-        if time_diff > 0:
-            random_seconds = random.randint(60*30, int(time_diff))
-            
-            context.job_queue.run_once(
-                random_checkin,
-                random_seconds,
-                data={'user_id': user_id},
-                name=f"checkin_{user_id}_{random.randint(1000, 9999)}"
-            )
+    end_of_day = now.replace(hour=22, minute=0, second=0, microsecond=0)
+
+    if now >= end_of_day:
+        return  # Too late in the day
+
+    total_seconds = (end_of_day - now).total_seconds()
+
+    num_checkins = 8
+    interval = total_seconds / num_checkins
+
+    # Save scheduled times
+    if 'checkins' not in user_data[user_id]:
+        user_data[user_id]['checkins'] = []
+
+    user_data[user_id]['checkins'] = []
+
+    for i in range(num_checkins):
+        scheduled_time = now + timedelta(seconds=interval * (i + 1))
+        delay = (scheduled_time - now).total_seconds()
+
+        user_data[user_id]['checkins'].append(str(scheduled_time))
+
+        context.job_queue.run_once(
+            random_checkin,
+            delay,
+            data={'user_id': user_id},
+            name=f"checkin_{user_id}_{i}"
+        )
+
+    save_user_data()
 
 
 async def random_checkin(context: ContextTypes.DEFAULT_TYPE):
@@ -377,6 +390,18 @@ def main():
     """Start the bot"""
     # Load existing user data
     load_user_data()
+    for user_id in user_data:
+    if 'checkins' in user_data[user_id]:
+        now = datetime.now()
+        for time_str in user_data[user_id]['checkins']:
+            scheduled_time = datetime.fromisoformat(time_str)
+            if scheduled_time > now:
+                delay = (scheduled_time - now).total_seconds()
+                application.job_queue.run_once(
+                    random_checkin,
+                    delay,
+                    data={'user_id': user_id}
+
     
     # Reset daily usage counters
     reset_daily_usage()
