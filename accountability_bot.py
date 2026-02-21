@@ -392,7 +392,10 @@ def main():
     
     # Start the bot
     print("Bot is starting...")
+<<<<<<< HEAD:accountability_bot_public.py
     #print(f"💚 Using Google Gemini (FREE)")
+=======
+>>>>>>> 65e7364 (fix railway detection):accountability_bot.py
     print(f"📊 Daily limit per user: {DAILY_MESSAGE_LIMIT} messages")
     application.run_polling()
 
