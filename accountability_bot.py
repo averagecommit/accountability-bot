@@ -391,16 +391,16 @@ def main():
     # Load existing user data
     load_user_data()
     for user_id in user_data:
-    if 'checkins' in user_data[user_id]:
-        now = datetime.now()
-        for time_str in user_data[user_id]['checkins']:
-            scheduled_time = datetime.fromisoformat(time_str)
-            if scheduled_time > now:
-                delay = (scheduled_time - now).total_seconds()
-                application.job_queue.run_once(
-                    random_checkin,
-                    delay,
-                    data={'user_id': user_id}
+        if 'checkins' in user_data[user_id]:
+            now = datetime.now()
+            for time_str in user_data[user_id]['checkins']:
+                scheduled_time = datetime.fromisoformat(time_str)
+                if scheduled_time > now:
+                    delay = (scheduled_time - now).total_seconds()
+                    application.job_queue.run_once(
+                        random_checkin,
+                        delay,
+                        data={'user_id': user_id}
 
     
     # Reset daily usage counters
