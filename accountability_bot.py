@@ -276,30 +276,35 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Check if we're expecting task input
     if context.user_data.get('expecting_tasks'):
-        # Parse tasks from message
+    # If user sends something short like "hi", treat as normal message
+        if len(user_message.split()) <= 2 and ',' not in user_message:
+            context.user_data['expecting_tasks'] = False
+            response = get_gemini_response(user_id, user_message)
+            await update.message.reply_text(response)
+            return
+
+        # Otherwise treat as task input
         if user_id not in user_data:
             user_data[user_id] = {
                 'tasks': [],
                 'conversation_history': [],
                 'usage': {'date': str(date.today()), 'count': 0}
             }
-        
-        # Simple parsing - split by comma or newline
+
         tasks = [task.strip() for task in user_message.replace('\n', ',').split(',') if task.strip()]
         user_data[user_id]['tasks'] = tasks
         save_user_data()
-        
+
         context.user_data['expecting_tasks'] = False
-        
+
         tasks_list = "\n".join([f"• {task}" for task in tasks])
         await update.message.reply_text(
             f"Awesome! Here are your tasks for today:\n\n{tasks_list}\n\n"
-            f"I'll check in with you randomly throughout the day. You've got this! 💪\n\n"
-            f"💬 {remaining} messages remaining today"
+            f"I'll check in with you randomly throughout the day. You've got this! 💪"
         )
-        
-        # Schedule random check-ins
+
         schedule_random_checkins(context, user_id)
+        return
     else:
         # Regular conversation with Gemini
         response = get_gemini_response(user_id, user_message)
